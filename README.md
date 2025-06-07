@@ -111,7 +111,7 @@ curl http://localhost:8080/api/prices/history/BTC?hours=6
 Ejemplo de ejecución:
 
 ```bash
-export CG_KEY=CG-D8E6zbDeVNjUWP95Dhsrr5k3
+export CG_KEY=CG-D8E6XXXXXXXXXXXXXXXXXX
 export PORT=8080
 java -jar target/cryptotracker-backend.jar
 ```
