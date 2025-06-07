@@ -1,2 +1,8 @@
-com\backend\WebServer$HealthHandler.class
+com\backend\handlers\UpdatePricesHandler.class
+com\backend\handlers\HealthHandler.class
+com\backend\handlers\PriceHistoryHandler.class
+com\backend\services\CoinGeckoService.class
+com\backend\handlers\QueryParser.class
+com\backend\services\CoinGeckoService$1.class
+com\backend\handlers\LatestPricesHandler.class
 com\backend\WebServer.class
