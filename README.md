@@ -2,134 +2,212 @@
 
 Microservicio Java REST que obtiene y expone el precio de las 10 principales criptomonedas, usando la API Pro de CoinGecko.
 
----
-
-## 🧩 Descripción
-
-Este microservicio proporciona los precios actuales y el historial de precios de criptomonedas. Usa la API Pro de CoinGecko para recopilar datos, expone endpoints para salud del servicio, actualización manual de precios, precios actuales y históricos por símbolo.
+Un servidor backend simple en Java que proporciona datos de precios de criptomonedas usando la API de CoinGecko.
+Implementa un servidor HTTP básico que expone endpoints para obtener estado de salud, precios actuales, historial de precios y actualización de precios.
 
 ---
 
-## ✅ Características
+## Descripción
 
-- ✅ Endpoint `/api/health` — Verifica el estado del servicio.
-- ✅ Endpoint `/api/update-prices` (POST) — Fuerza la actualización manual.
-- ✅ Endpoint `/api/prices/latest` (GET) — Devuelve precios actuales de las 10 principales criptos.
-- ✅ Endpoint `/api/prices/history/{symbol}?hours=n` (GET) — Devuelve historial horario de una cripto.
+Este proyecto implementa un servidor HTTP básico utilizando el servidor embebido de Java (`HttpServer`).
+Se integra con la API de CoinGecko mediante una implementación propia (ya que no fue posible usar la librería oficial `net.osslabz:coingecko-java`).
+Esto permite obtener datos como precios actuales de criptomonedas y gráficos históricos.
 
-/api/health para monitoreo en watchdog.
+Características principales:
 
----
+* Endpoint para verificar que el servidor esté activo
+* Obtener los 10 principales criptomonedas por capitalización de mercado con sus precios
+* Obtener datos históricos (gráfico de mercado) para una moneda y rango de tiempo específicos
+* Endpoint para forzar actualización de precios (implementación básica)
 
-## 📌 Requisitos
-
-- Java 11+
-- Maven
-- CoinGecko Java SDK (`coingecko-java` 1.0.0)
-- (Opcional) `com.fasterxml.jackson.core:jackson-databind` o `Gson`
+El proyecto usa Java 8, Maven y un servidor HTTP embebido ligero, ideal para pruebas o desarrollos rápidos.
 
 ---
 
-## 🛠 Instalación
+## Tecnologías usadas
 
-1. Clona este repositorio:
-   ```bash
-   git clone <url-del-repo>
-   cd cryptotracker-backend
-
-
-2. Agrega dependencias en `pom.xml`:
-
-   ```xml
-   <dependency>
-     <groupId>net.osslabz</groupId>
-     <artifactId>coingecko-java</artifactId>
-     <version>1.0.0</version>
-   </dependency>
-   <dependency>
-     <groupId>com.fasterxml.jackson.core</groupId>
-     <artifactId>jackson-databind</artifactId>
-     <version>2.14.0</version>
-   </dependency>
-   ```
-3. Compila el proyecto:
-
-   ```bash
-   mvn clean package
-   ```
+* Java 8
+* Maven para manejo de dependencias
+* Cliente personalizado para API CoinGecko
+* Servidor HTTP embebido de Java (`com.sun.net.httpserver.HttpServer`)
+* Jackson para serialización JSON
 
 ---
 
-## 🚀 Uso
+## Instalación y ejecución
 
-Ejecuta el servicio:
+1. Clonar el repositorio
 
 ```bash
-java -jar target/cryptotracker-backend.jar
+git clone <url-del-repositorio>
+cd backend
 ```
 
-Se iniciará en el puerto `8080` (puede configurarse por argumento o variable de entorno).
-
-### 🔌 Endpoints
-
-| Método | URL                                    | Descripción                                                   |
-| ------ | -------------------------------------- | ------------------------------------------------------------- |
-| GET    | `/api/health`                          | Estado del servicio                                           |
-| POST   | `/api/update-prices`                   | Actualización manual de precios                               |
-| GET    | `/api/prices/latest`                   | Lista JSON con precios actuales de las 10 principales criptos |
-| GET    | `/api/prices/history/{symbol}?hours=n` | Historial por símbolo con parámetro `hours` (ej. `?hours=6`)  |
-
-Ejemplo:
+2. Construir con Maven
 
 ```bash
-curl http://localhost:8080/api/prices/history/BTC?hours=6
+mvn clean package
+```
+
+3. Ejecutar el servidor
+
+```bash
+java -cp target/backend-1.0-SNAPSHOT.jar com.backend.WebServer
+```
+
+El servidor arrancará escuchando en el puerto **8080**.
+
+---
+
+## Endpoints disponibles
+
+### 1. Estado del servidor (Health Check)
+
+* **URL:** `/api/health`
+* **Método:** `GET`
+* **Descripción:** Retorna un JSON simple indicando que el servidor está activo.
+* **Ejemplo de respuesta:**
+
+```json
+{
+  "status": "ok"
+}
 ```
 
 ---
 
-## 🔧 Configuración
+### 2. Actualizar precios
 
-* **CLAVE\_API\_CG** (obligatoria): tu `CG-...` de CoinGecko Pro
-* **PORT**: puerto del servidor (por defecto `8080`)
-* **THREADS**: número de hilos en el executor (opcional)
+* **URL:** `/api/update-prices`
+* **Método:** `POST`
+* **Descripción:** Endpoint para forzar la actualización de precios en el backend (implementación básica).
+* **Ejemplo de respuesta:**
 
-Ejemplo de ejecución:
+```json
+{
+  "message": "Precios actualizados exitosamente"
+}
+```
 
-```bash
-export CG_KEY=CG-D8E6XXXXXXXXXXXXXXXXXX
-export PORT=8080
-java -jar target/cryptotracker-backend.jar
+**Nota:** Actualmente no requiere cuerpo JSON; la llamada puede hacerse con un POST vacío.
+
+---
+
+### 3. Últimos precios
+
+* **URL:** `/api/prices/latest`
+* **Método:** `GET`
+* **Descripción:** Devuelve los datos actuales de mercado de las 10 principales criptomonedas por capitalización en USD.
+* **Respuesta:** Array JSON con objetos que contienen detalles de mercado (id, símbolo, precio, capitalización, etc.)
+
+**Ejemplo de respuesta:**
+
+```json
+[
+  {
+    "id": "bitcoin",
+    "symbol": "btc",
+    "name": "Bitcoin",
+    "current_price": 30000,
+    "market_cap": 600000000000,
+    ...
+  },
+  ...
+]
 ```
 
 ---
 
-## 🌐 Estrategia de despliegue
+### 4. Historial de precios
 
-* Contenerización con Docker
-* Escalabilidad usando Kubernetes o GCP App Engine
-* Debe ser compatible con entornos cloud y contener firewall configurable
+* **URL:** `/api/prices/history/{simbolo}?hours={horas}`
+* **Método:** `GET`
+* **Descripción:** Devuelve datos históricos de precios (gráfico de mercado) en USD para la criptomoneda indicada.
+* **Parámetros:**
+
+  * `simbolo` (en la ruta): símbolo o id de la criptomoneda, por ejemplo `bitcoin` o `ethereum`
+  * `hours` (query param opcional): cantidad de horas del historial a obtener. Por defecto 24.
+
+**Ejemplo de petición:**
+
+```
+GET /api/prices/history/bitcoin?hours=48
+```
+
+**Respuesta:** JSON con arrays de precios, capitalización y volúmenes en el rango solicitado.
+
+---
+
+## Formato JSON para peticiones y respuestas
+
+* Los endpoints que aceptan peticiones con cuerpo (`POST`) actualmente no requieren datos en JSON para funcionar.
+* Las respuestas siempre están en formato JSON, con codificación UTF-8.
+* Si en un futuro decides extender el endpoint `/api/update-prices` para aceptar parámetros en JSON, el formato esperado podría ser algo como:
+
+```json
+{
+  "forceUpdate": true
+}
+```
+
+* Para consumir las respuestas, simplemente parsea el JSON recibido. Ejemplo en Java con Jackson:
+
+```java
+ObjectMapper mapper = new ObjectMapper();
+List<Market> markets = mapper.readValue(jsonResponse, new TypeReference<List<Market>>() {});
+```
 
 ---
 
-## 🧪 Pruebas
+## Estructura del proyecto
 
-* Pruebas unitarias con JUnit y Mockito
-* Verificar:
-
-  * Respuesta de `/api/health`
-  * JSON en `/api/prices/latest`
-  * Datos consistentes en `/api/prices/history`
-* Integración backend + CoinGecko en test controlado
+```
+src/
+├── main/
+│   ├── java/
+│   │   ├── com.backend/
+│   │   │   ├── WebServer.java               # Punto de entrada principal
+│   │   │   ├── handlers/
+│   │   │   │   ├── HealthHandler.java
+│   │   │   │   ├── UpdatePricesHandler.java
+│   │   │   │   ├── LatestPricesHandler.java
+│   │   │   │   ├── PriceHistoryHandler.java
+│   │   │   │   └── QueryParser.java         # Utilidad para parsear query strings
+│   │   │   └── services/
+│   │   │       └── CoinGeckoService.java    # Cliente personalizado para CoinGecko API
+├── resources/
+└── pom.xml
+```
 
 ---
 
-## 📅 Roadmap
+## Dependencias
 
-* [ ] Almacenamiento en base de datos para históricos
-* [ ] Endpoint `/api/prices/history/all`
-* [ ] Mecanismo cron job / scheduler automático
-* [ ] Monitoreo con métricas Prometheus / Grafana
+Actualmente no se usa la librería oficial `net.osslabz:coingecko-java` porque no fue posible integrarla correctamente.
+Se usa un cliente propio dentro de `CoinGeckoService` para manejar llamadas HTTP a la API de CoinGecko.
+
+Además:
+
+* Jackson (`com.fasterxml.jackson.core:jackson-databind`) para JSON
+* JUnit para pruebas (scope test)
 
 ---
+
+## Cómo extender el proyecto
+
+* Implementar caché o actualizaciones periódicas automáticas dentro de `CoinGeckoService` para mejorar rendimiento.
+* Añadir autenticación para proteger endpoints sensibles.
+* Agregar más endpoints para otros datos de CoinGecko (info de monedas, exchanges, etc.)
+* Mejorar manejo de errores y validaciones.
+* Añadir pruebas unitarias e integración.
+
+---
+
+## Notas finales
+
+* Este proyecto usa el servidor HTTP embebido de Java para simplicidad y aprendizaje. Para producción considera frameworks más robustos (Spring Boot, Micronaut, etc.).
+* Se requiere conexión a Internet para consultar la API de CoinGecko.
+* La API de CoinGecko tiene límites y políticas que deben respetarse.
+
 
 
