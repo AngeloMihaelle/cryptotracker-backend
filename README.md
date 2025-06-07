@@ -4,21 +4,6 @@ Microservicio Java REST que obtiene y expone el precio de las 10 principales cri
 
 ---
 
-## 📋 Tabla de Contenidos
-- [Descripción](#descripción)
-- [Características](#características)
-- [Requisitos](#requisitos)
-- [Instalación](#instalación)
-- [Uso](#uso)
-  - Endpoints
-- [Configuración](#configuración)
-- [Estrategia de despliegue](#estrategia-de-despliegue)
-- [Pruebas](#pruebas)
-- [Roadmap](#roadmap)
-- [Contacto](#contacto)
-
----
-
 ## 🧩 Descripción
 
 Este microservicio proporciona los precios actuales y el historial de precios de criptomonedas. Usa la API Pro de CoinGecko para recopilar datos, expone endpoints para salud del servicio, actualización manual de precios, precios actuales y históricos por símbolo.
