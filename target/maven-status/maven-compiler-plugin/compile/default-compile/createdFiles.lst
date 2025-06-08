@@ -6,3 +6,4 @@ com\backend\handlers\QueryParser.class
 com\backend\services\CoinGeckoService$1.class
 com\backend\handlers\LatestPricesHandler.class
 com\backend\WebServer.class
+com\backend\handlers\StaticFileHandler.class

@@ -9,7 +9,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
 public class WebServer {
-    private static final int PORT = 8080;
+    private static final int PORT = 80;
 
     public static void main(String[] args) {
         try {
@@ -19,7 +19,9 @@ public class WebServer {
             server.createContext("/api/health", new HealthHandler());
             server.createContext("/api/update-prices", new UpdatePricesHandler(coinGeckoService));
             server.createContext("/api/prices/latest", new LatestPricesHandler(coinGeckoService));
-            server.createContext("/api/prices/history", new PriceHistoryHandler(coinGeckoService)); 
+            server.createContext("/api/prices/history", new PriceHistoryHandler(coinGeckoService));
+            server.createContext("/", new StaticFileHandler("/ui_assets"));
+
             // PriceHistoryHandler debe manejar paths /api/prices/history/{symbol}
 
             server.setExecutor(Executors.newFixedThreadPool(4));
