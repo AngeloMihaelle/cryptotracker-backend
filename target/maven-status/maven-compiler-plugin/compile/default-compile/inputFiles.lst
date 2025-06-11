@@ -4,5 +4,7 @@ C:\Users\angel\OneDrive\Documentos\backend\cryptotracker-backend\src\main\java\c
 C:\Users\angel\OneDrive\Documentos\backend\cryptotracker-backend\src\main\java\com\backend\handlers\UpdatePricesHandler.java
 C:\Users\angel\OneDrive\Documentos\backend\cryptotracker-backend\src\main\java\com\backend\handlers\LatestPricesHandler.java
 C:\Users\angel\OneDrive\Documentos\backend\cryptotracker-backend\src\main\java\com\backend\handlers\PriceHistoryHandler.java
+C:\Users\angel\OneDrive\Documentos\backend\cryptotracker-backend\src\main\java\com\backend\handlers\ChartBuilder.java
 C:\Users\angel\OneDrive\Documentos\backend\cryptotracker-backend\src\main\java\com\backend\services\CoinGeckoService.java
+C:\Users\angel\OneDrive\Documentos\backend\cryptotracker-backend\src\main\java\com\backend\handlers\SingleChartHandler.java
 C:\Users\angel\OneDrive\Documentos\backend\cryptotracker-backend\src\main\java\com\backend\handlers\QueryParser.java

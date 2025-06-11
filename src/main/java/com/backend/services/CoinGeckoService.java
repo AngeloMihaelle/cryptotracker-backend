@@ -3,7 +3,10 @@ package com.backend.services;
 import com.google.gson.*;
 import okhttp3.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class CoinGeckoService {
@@ -25,7 +28,14 @@ public class CoinGeckoService {
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+            if (!response.isSuccessful()) {
+                System.err.println("Error al obtener el top 10: " + response.code() + " - " + response.message());
+                throw new IOException("Unexpected code " + response);
+            }
+
+            if (response.body() == null) {
+                throw new IOException("Cuerpo de respuesta vacío");
+            }
 
             String body = response.body().string();
             return gson.fromJson(body, new com.google.gson.reflect.TypeToken<List<Map<String, Object>>>(){}.getType());
@@ -33,34 +43,30 @@ public class CoinGeckoService {
     }
 
     public List<List<Double>> getPriceHistory(String coinId, int hours) throws IOException {
-        // CoinGecko solo permite granularidad horaria hasta 90 días atrás
-        int days = Math.max(1, (int) Math.ceil(hours / 24.0));
+        System.out.println("[DEBUG] getPriceHistory mock mode: leyendo btc_fake_data.csv para " + coinId);
 
-        String url = BASE_URL + "/coins/" + coinId.toLowerCase()
-                + "/market_chart?vs_currency=usd&days=" + days + "&interval=hourly";
+        List<List<Double>> prices = new ArrayList<>();
+        try (InputStream is = getClass().getResourceAsStream("/btc_fake_data.csv");
+             BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 
-        Request request = new Request.Builder()
-                .url(url)
-                .get()
-                .build();
-
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-
-            JsonObject json = JsonParser.parseString(response.body().string()).getAsJsonObject();
-            JsonArray pricesArray = json.getAsJsonArray("prices");
-
-            List<List<Double>> prices = new ArrayList<>();
-            for (JsonElement e : pricesArray) {
-                JsonArray pair = e.getAsJsonArray();
-                prices.add(Arrays.asList(pair.get(0).getAsDouble(), pair.get(1).getAsDouble()));
+            String line = br.readLine(); // salta encabezado
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                long tsSeconds = Long.parseLong(parts[0]);
+                double price = Double.parseDouble(parts[1]);
+                // convertir a ms y simular array [timestamp_ms, price]
+                prices.add(List.of(tsSeconds * 1000.0, price));
             }
-            return prices;
+        } catch (Exception e) {
+            System.err.println("[ERROR] Al leer CSV dummy: " + e.getMessage());
+            throw new IOException("Mock data fail", e);
         }
-    }
 
+        System.out.println("[DEBUG] Precio histórico cargado. Puntos: " + prices.size());
+        return prices;
+    }
     public void updatePrices() {
         // En este ejemplo, no se almacena localmente, así que no hace nada
-        System.out.println("Forzando actualización (no cache implementado aún)");
+        System.out.println("Forzando actualización (no hay cache implementado)");
     }
 }
