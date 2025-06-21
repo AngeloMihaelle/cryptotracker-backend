@@ -62,7 +62,7 @@ public class SingleChartHandler implements HttpHandler {
 
         JFreeChart chart;
         try {
-            chart = ChartBuilder.buildLineChart(history, "Precio de " + symbol, "Hora", "USD");
+            chart = ChartBuilder.buildStyledLineChart(history, "Precio de " + symbol, "Hora", "USD");
             System.out.println("[INFO] Gráfico generado correctamente.");
         } catch (Exception e) {
             System.out.println("[ERROR] Error al generar el gráfico: " + e.getMessage());

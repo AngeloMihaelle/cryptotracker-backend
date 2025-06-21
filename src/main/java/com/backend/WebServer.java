@@ -23,6 +23,8 @@ public class WebServer {
             server.createContext("/api/chart/single", new SingleChartHandler(coinGeckoService));
 
             server.createContext("/", new StaticFileHandler("/ui_assets"));
+            server.createContext("/api/chart/overlay", new OverlayChartHandler(coinGeckoService));
+            server.createContext("/api/chart/regression", new RegressionChartHandler(coinGeckoService));
 
             // PriceHistoryHandler debe manejar paths /api/prices/history/{symbol}
 
