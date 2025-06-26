@@ -8,6 +8,7 @@ C:\Users\angel\Documents\cryptotracker-backend\cryptotracker-backend\src\main\ja
 C:\Users\angel\Documents\cryptotracker-backend\cryptotracker-backend\src\main\java\com\backend\handlers\StaticFileHandler.java
 C:\Users\angel\Documents\cryptotracker-backend\cryptotracker-backend\src\main\java\com\backend\handlers\RegressionChartHandler.java
 C:\Users\angel\Documents\cryptotracker-backend\cryptotracker-backend\src\main\java\com\backend\handlers\SingleChartHandler.java
+C:\Users\angel\Documents\cryptotracker-backend\cryptotracker-backend\src\main\java\com\backend\handlers\ExportCsvHandler.java
 C:\Users\angel\Documents\cryptotracker-backend\cryptotracker-backend\src\main\java\com\backend\services\DatabaseService.java
 C:\Users\angel\Documents\cryptotracker-backend\cryptotracker-backend\src\main\java\com\backend\handlers\QueryParser.java
 C:\Users\angel\Documents\cryptotracker-backend\cryptotracker-backend\src\main\java\com\backend\handlers\PriceHistoryHandler.java

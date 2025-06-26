@@ -1,0 +1,14 @@
+com\backend\services\DatabaseService.class
+com\backend\handlers\ExportCsvHandler.class
+com\backend\handlers\HealthHandler.class
+com\backend\handlers\PriceHistoryHandler.class
+com\backend\handlers\ChartBuilder.class
+com\backend\handlers\UpdatePricesHandler.class
+com\backend\handlers\OverlayChartHandler.class
+com\backend\services\CoinGeckoService.class
+com\backend\handlers\RegressionChartHandler.class
+com\backend\handlers\QueryParser.class
+com\backend\handlers\LatestPricesHandler.class
+com\backend\handlers\SingleChartHandler.class
+com\backend\WebServer.class
+com\backend\handlers\StaticFileHandler.class

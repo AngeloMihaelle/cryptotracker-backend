@@ -1,29 +1,186 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Ejemplo con Backend Java</title>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
-    <link rel="stylesheet" type="text/css" href="ui_assets/style.css">
-    <script type="text/javascript" src="ui_assets/javascript.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoTracker Web</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-
 <body>
-<div id="layout">
-    <h1>Contador de palabras</h1>
-    <h3>Introduzca una frase:</h3>
-    <div>
-        <input type="text" id="search_text">
+    <!-- Navegación -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fab fa-bitcoin"></i>
+                <span>CryptoTracker</span>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#" data-page="home" class="nav-link active">Inicio</a></li>
+                <li><a href="#" data-page="current-prices" class="nav-link">Precios Actuales</a></li>
+                <li><a href="#" data-page="price-history" class="nav-link">Historial Individual</a></li>
+                <li><a href="#" data-page="multi-charts" class="nav-link">Gráficas Múltiples</a></li>
+                <li><a href="#" data-page="comparison" class="nav-link">Comparación</a></li>
+                <li><a href="#" data-page="regression" class="nav-link">Regresión Lineal</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container">
+        <!-- Página de inicio -->
+        <div id="home" class="page active">
+            <div class="hero">
+                <h1 class="hero-title">
+                    <span class="gradient-text">CryptoTracker</span>
+                </h1>
+                <p class="hero-subtitle">Monitorea las principales criptomonedas en tiempo real</p>
+                <div class="hero-animation">
+                    <div class="crypto-float btc"><i class="fab fa-bitcoin"></i></div>
+                    <div class="crypto-float eth"><i class="fab fa-ethereum"></i></div>
+                    <div class="crypto-float bnb">BNB</div>
+                </div>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card" data-page="current-prices">
+                    <i class="fas fa-dollar-sign"></i>
+                    <h3>Precios Actuales</h3>
+                    <p>Top 10 criptomonedas con actualización en tiempo real</p>
+                </div>
+                <div class="feature-card" data-page="price-history">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Historial Individual</h3>
+                    <p>Analiza la variación de precio de una criptomoneda</p>
+                </div>
+                <div class="feature-card" data-page="multi-charts">
+                    <i class="fas fa-chart-area"></i>
+                    <h3>Gráficas Múltiples</h3>
+                    <p>Visualiza las variaciones del top 10 simultáneamente</p>
+                </div>
+                <div class="feature-card" data-page="comparison">
+                    <i class="fas fa-layer-group"></i>
+                    <h3>Comparación</h3>
+                    <p>Compara múltiples criptomonedas en una sola gráfica</p>
+                </div>
+                <div class="feature-card" data-page="regression">
+                    <i class="fas fa-project-diagram"></i>
+                    <h3>Regresión Lineal</h3>
+                    <p>Análisis predictivo con regresión lineal</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Página 1: Precios actuales -->
+        <div id="current-prices" class="page">
+            <h2 class="page-title">Top 10 Criptomonedas - Precios Actuales</h2>
+            <div class="crypto-list" id="cryptoList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Cargando datos...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Página 2: Historial individual -->
+        <div id="price-history" class="page">
+            <h2 class="page-title">Historial de Precio Individual</h2>
+            <div class="selection-panel">
+                <div class="crypto-selector">
+                    <label>Selecciona una criptomoneda:</label>
+                    <select id="cryptoSelect" class="select-input">
+                        <option value="">Cargando...</option>
+                    </select>
+                </div>
+                <div class="time-selector">
+                    <label>Intervalo de tiempo (horas):</label>
+                    <input type="range" id="timeRange" min="1" max="24" value="24" class="range-input">
+                    <span id="timeValue" class="range-value">24</span>
+                </div>
+                <button id="showHistory" class="btn-primary">Mostrar Gráfica</button>
+            </div>
+            <div class="chart-container" id="historyChart">
+                <div class="placeholder">
+                    <i class="fas fa-chart-line"></i>
+                    <p>Selecciona una criptomoneda y un intervalo para ver la gráfica</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Página 3: Gráficas múltiples -->
+        <div id="multi-charts" class="page">
+            <h2 class="page-title">Gráficas del Top 10</h2>
+            <div class="time-selector-solo">
+                <label>Intervalo de tiempo (horas):</label>
+                <input type="range" id="multiTimeRange" min="1" max="24" value="24" class="range-input">
+                <span id="multiTimeValue" class="range-value">24</span>
+                <button id="showMultiCharts" class="btn-primary">Actualizar Gráficas</button>
+            </div>
+            <div class="multi-charts-grid" id="multiChartsGrid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Esperando selección...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Página 4: Comparación -->
+        <div id="comparison" class="page">
+            <h2 class="page-title">Comparación de Criptomonedas</h2>
+            <div class="comparison-panel">
+                <div class="crypto-multi-selector">
+                    <label>Selecciona las criptomonedas a comparar:</label>
+                    <div id="cryptoCheckboxes" class="checkbox-group">
+                        <p>Cargando opciones...</p>
+                    </div>
+                </div>
+                <div class="time-selector">
+                    <label>Intervalo de tiempo (horas):</label>
+                    <input type="range" id="compTimeRange" min="1" max="24" value="24" class="range-input">
+                    <span id="compTimeValue" class="range-value">24</span>
+                </div>
+                <button id="showComparison" class="btn-primary">Generar Comparación</button>
+            </div>
+            <div class="chart-container" id="comparisonChart">
+                <div class="placeholder">
+                    <i class="fas fa-layer-group"></i>
+                    <p>Selecciona al menos 2 criptomonedas para comparar</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Página 5: Regresión lineal -->
+        <div id="regression" class="page">
+            <h2 class="page-title">Análisis de Regresión Lineal</h2>
+            <div class="selection-panel">
+                <div class="crypto-selector">
+                    <label>Selecciona una criptomoneda:</label>
+                    <select id="regressionSelect" class="select-input">
+                        <option value="">Cargando...</option>
+                    </select>
+                </div>
+                <div class="time-selector">
+                    <label>Intervalo de tiempo (horas):</label>
+                    <input type="range" id="regressionTimeRange" min="1" max="24" value="24" class="range-input">
+                    <span id="regressionTimeValue" class="range-value">24</span>
+                </div>
+                <button id="showRegression" class="btn-primary">Calcular Regresión</button>
+            </div>
+            <div class="chart-container" id="regressionChart">
+                <div class="placeholder">
+                    <i class="fas fa-project-diagram"></i>
+                    <p>Selecciona una criptomoneda para ver el análisis de regresión</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <br/>
-    <div>
-      <button id="submit_button">Enviar</button>
-    </div>
-    <div id="results">
-        <table>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
-</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="javascript.js"></script>
 </body>
 </html>

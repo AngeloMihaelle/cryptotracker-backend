@@ -136,12 +136,12 @@ public class RegressionChartHandler implements HttpHandler {
 
         XYPlot plot = chart.getXYPlot();
 
-        XYLineAndShapeRenderer renderer1 = new XYLineAndShapeRenderer(true, true);
+        XYLineAndShapeRenderer renderer1 = new XYLineAndShapeRenderer(true, false); // Línea y puntos
         renderer1.setSeriesPaint(0, Color.CYAN);
         renderer1.setSeriesStroke(0, new BasicStroke(2f));
         renderer1.setSeriesShape(0, new Ellipse2D.Double(-3, -3, 6, 6));
 
-        XYLineAndShapeRenderer renderer2 = new XYLineAndShapeRenderer(true, false);
+        XYLineAndShapeRenderer renderer2 = new XYLineAndShapeRenderer(true, false); // Solo línea
         renderer2.setSeriesPaint(0, Color.ORANGE);
         renderer2.setSeriesStroke(0, new BasicStroke(3f));
 

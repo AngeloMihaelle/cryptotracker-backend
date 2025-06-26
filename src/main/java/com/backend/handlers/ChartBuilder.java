@@ -5,6 +5,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.Minute;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -24,7 +25,7 @@ public class ChartBuilder {
         for (List<Double> p : data) {
             long t = p.get(0).longValue();
             double price = p.get(1);
-            series.addOrUpdate(new Minute(new java.util.Date(t)), price);
+            series.addOrUpdate(new Millisecond(new java.util.Date(t)), price);
         }
         XYDataset dataset = new TimeSeriesCollection(series);
 
@@ -40,7 +41,7 @@ public class ChartBuilder {
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer(true, true);
         renderer.setSeriesPaint(0, new Color(102, 255, 178));
         renderer.setSeriesStroke(0, new BasicStroke(2.5f));
-        renderer.setSeriesShape(0, new Ellipse2D.Double(-4, -4, 8, 8));
+        renderer.setSeriesShape(0, new Ellipse2D.Double(-1, -1, 2, 2));
         renderer.setDefaultItemLabelGenerator(new StandardXYItemLabelGenerator());
         renderer.setDefaultItemLabelsVisible(false); // Ocultar valores en puntos
         renderer.setDefaultItemLabelPaint(Color.WHITE);
@@ -93,7 +94,7 @@ public class ChartBuilder {
     for (int i = 0; i < seriesCount; i++) {
         renderer.setSeriesPaint(i, Color.getHSBColor((float)i / seriesCount, 0.7f, 0.9f));
         renderer.setSeriesStroke(i, new BasicStroke(2.5f));
-        renderer.setSeriesShape(i, new Ellipse2D.Double(-4, -4, 8, 8));
+        renderer.setSeriesShape(i, new Ellipse2D.Double(-1, -1, 2, 2));
     }
 
     plot.setRenderer(renderer);

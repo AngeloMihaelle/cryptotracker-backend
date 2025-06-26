@@ -2,6 +2,7 @@ package com.backend;
 
 import com.backend.handlers.*;
 import com.backend.services.CoinGeckoService;
+import com.backend.services.DatabaseService;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -27,9 +28,11 @@ public class WebServer {
             server.createContext("/api/chart/regression", new RegressionChartHandler(coinGeckoService));
 
             // PriceHistoryHandler debe manejar paths /api/prices/history/{symbol}
+            server.createContext("/api/export/", new ExportCsvHandler(new DatabaseService()));
 
             server.setExecutor(Executors.newFixedThreadPool(4));
             server.start();
+            
 
             System.out.println("Servidor escuchando en el puerto " + PORT);
         } catch (IOException e) {
