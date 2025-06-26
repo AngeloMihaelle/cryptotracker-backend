@@ -1,36 +1,53 @@
-# 📈 CryptoTracker Web — Backend Service
 
-Microservicio Java REST que obtiene y expone el precio de las 10 principales criptomonedas, usando la API Pro de CoinGecko.
+# 📈 CryptoTracker Web — Backend Service (Versión 2.0)
 
-Un servidor backend simple en Java que proporciona datos de precios de criptomonedas usando la API de CoinGecko.
-Implementa un servidor HTTP básico que expone endpoints para obtener estado de salud, precios actuales, historial de precios y actualización de precios.
+Microservicio Java REST que obtiene, almacena y expone el precio de las principales criptomonedas usando datos de CoinGecko y una base de datos PostgreSQL para persistencia y filtrado.
+
+Este backend ligero utiliza el servidor HTTP embebido de Java, integra consultas a CoinGecko, y almacena precios históricos en base de datos para consulta, generación de gráficos y regresión lineal.
 
 ---
 
 ## Descripción
 
-Este proyecto implementa un servidor HTTP básico utilizando el servidor embebido de Java (`HttpServer`).
-Se integra con la API de CoinGecko mediante una implementación propia (ya que no fue posible usar la librería oficial `net.osslabz:coingecko-java`).
-Esto permite obtener datos como precios actuales de criptomonedas y gráficos históricos.
+Este proyecto provee un servidor HTTP que:
 
-Características principales:
+* Obtiene precios en vivo de criptomonedas desde CoinGecko para un conjunto activo configurado en base de datos.
+* Almacena el historial de precios en PostgreSQL.
+* Expone endpoints REST para:
 
-* Endpoint para verificar que el servidor esté activo
-* Obtener los 10 principales criptomonedas por capitalización de mercado con sus precios
-* Obtener datos históricos (gráfico de mercado) para una moneda y rango de tiempo específicos
-* Endpoint para forzar actualización de precios (implementación básica)
+  * Verificar estado del servidor (health check).
+  * Consultar los últimos precios de criptomonedas activas.
+  * Consultar historial de precios filtrado por símbolo y rango horario.
+  * Forzar actualización de precios.
+  * Generar gráficos de precios y regresiones lineales en formato PNG.
+  * Servir archivos estáticos para front-end o documentación.
 
-El proyecto usa Java 8, Maven y un servidor HTTP embebido ligero, ideal para pruebas o desarrollos rápidos.
+Las criptomonedas activas y su información (símbolo, nombre, logo, estado activo) se gestionan en la base de datos.
+
+---
+
+## Características principales
+
+* **Persistencia en PostgreSQL:** para mantener histórico y estado actualizado.
+* **Filtrado por criptomonedas activas:** solo datos relevantes se consultan y almacenan.
+* **Mapeo actualizado con nuevas criptos:** TRX, HYPE, BCH, LINK agregadas al catálogo.
+* **Endpoints para gráficos:** se generan imágenes PNG con JFreeChart para precios y regresiones.
+* **Servicios REST completos:** para manejo de precios, historial, gráficos, y actualización manual.
+* **Separación clara de capas:** handlers HTTP, servicio de integración con CoinGecko, y acceso a base de datos.
+* **Configuración vía variables de entorno:** URL, usuario y contraseña de BD.
 
 ---
 
 ## Tecnologías usadas
 
-* Java 8
-* Maven para manejo de dependencias
-* Cliente personalizado para API CoinGecko
-* Servidor HTTP embebido de Java (`com.sun.net.httpserver.HttpServer`)
-* Jackson para serialización JSON
+* Java 17+ (recomendado)
+* PostgreSQL
+* OkHttp para llamadas HTTP a CoinGecko
+* Gson para parsing JSON
+* JFreeChart para generación de gráficos
+* Apache Commons IO para manejo de streams
+* JDBC para conexión y consultas a base de datos
+* Servidor HTTP embebido `com.sun.net.httpserver.HttpServer`
 
 ---
 
@@ -43,19 +60,27 @@ git clone <url-del-repositorio>
 cd backend
 ```
 
-2. Construir con Maven
+2. Configurar variables de entorno para conexión a PostgreSQL
+
+```bash
+export DB_URL="jdbc:postgresql://host:port/dbname"
+export DB_USER="usuario"
+export DB_PASSWORD="contraseña"
+```
+
+3. Construir con Maven
 
 ```bash
 mvn clean package
 ```
 
-3. Ejecutar el servidor
+4. Ejecutar el servidor
 
 ```bash
 java -cp target/backend-1.0-SNAPSHOT.jar com.backend.WebServer
 ```
 
-El servidor arrancará escuchando en el puerto **8080**.
+El servidor se ejecutará por defecto en el puerto **8080**.
 
 ---
 
@@ -65,8 +90,7 @@ El servidor arrancará escuchando en el puerto **8080**.
 
 * **URL:** `/api/health`
 * **Método:** `GET`
-* **Descripción:** Retorna un JSON simple indicando que el servidor está activo.
-* **Ejemplo de respuesta:**
+* **Respuesta:**
 
 ```json
 {
@@ -76,20 +100,12 @@ El servidor arrancará escuchando en el puerto **8080**.
 
 ---
 
-### 2. Actualizar precios
+### 2. Actualizar precios (Forzar actualización)
 
 * **URL:** `/api/update-prices`
 * **Método:** `POST`
-* **Descripción:** Endpoint para forzar la actualización de precios en el backend (implementación básica).
-* **Ejemplo de respuesta:**
-
-```json
-{
-  "message": "Precios actualizados exitosamente"
-}
-```
-
-**Nota:** Actualmente no requiere cuerpo JSON; la llamada puede hacerse con un POST vacío.
+* **Descripción:** Fuerza la actualización de precios desde CoinGecko y almacena en base de datos.
+* **Respuesta:** Texto simple indicando resultado.
 
 ---
 
@@ -97,24 +113,8 @@ El servidor arrancará escuchando en el puerto **8080**.
 
 * **URL:** `/api/prices/latest`
 * **Método:** `GET`
-* **Descripción:** Devuelve los datos actuales de mercado de las 10 principales criptomonedas por capitalización en USD.
-* **Respuesta:** Array JSON con objetos que contienen detalles de mercado (id, símbolo, precio, capitalización, etc.)
-
-**Ejemplo de respuesta:**
-
-```json
-[
-  {
-    "id": "bitcoin",
-    "symbol": "btc",
-    "name": "Bitcoin",
-    "current_price": 30000,
-    "market_cap": 600000000000,
-    ...
-  },
-  ...
-]
-```
+* **Descripción:** Devuelve últimos precios almacenados para criptomonedas activas.
+* **Respuesta:** Array JSON con objetos que incluyen símbolo, nombre, logo, precio y timestamp.
 
 ---
 
@@ -122,39 +122,255 @@ El servidor arrancará escuchando en el puerto **8080**.
 
 * **URL:** `/api/prices/history/{simbolo}?hours={horas}`
 * **Método:** `GET`
-* **Descripción:** Devuelve datos históricos de precios (gráfico de mercado) en USD para la criptomoneda indicada.
 * **Parámetros:**
 
-  * `simbolo` (en la ruta): símbolo o id de la criptomoneda, por ejemplo `bitcoin` o `ethereum`
-  * `hours` (query param opcional): cantidad de horas del historial a obtener. Por defecto 24.
-
-**Ejemplo de petición:**
-
-```
-GET /api/prices/history/bitcoin?hours=48
-```
-
-**Respuesta:** JSON con arrays de precios, capitalización y volúmenes en el rango solicitado.
+  * `simbolo` (ruta): símbolo de la criptomoneda (ej. BTC, ETH)
+  * `hours` (query opcional): horas de histórico a consultar (por defecto 24)
+* **Descripción:** Devuelve histórico de precios en rango definido.
+* **Respuesta:** JSON con lista de objetos `{ timestamp, price }`
 
 ---
 
-## Formato JSON para peticiones y respuestas
+### 5. Gráfico simple de precios (PNG)
 
-* Los endpoints que aceptan peticiones con cuerpo (`POST`) actualmente no requieren datos en JSON para funcionar.
-* Las respuestas siempre están en formato JSON, con codificación UTF-8.
-* Si en un futuro decides extender el endpoint `/api/update-prices` para aceptar parámetros en JSON, el formato esperado podría ser algo como:
+* **URL:** `/api/chart/single/{simbolo}?hours={horas}`
+* **Método:** `GET`
+* **Descripción:** Genera y devuelve gráfico PNG de precios para la cripto y rango dado.
+* **Respuesta:** Imagen PNG
+
+---
+
+### 6. Gráfico de regresión lineal (PNG)
+
+* **URL:** `/api/chart/regression/{simbolo}?start=HH:mm&end=HH:mm`
+* **Método:** `GET`
+* **Descripción:** Genera gráfico PNG con línea de regresión lineal para precios dentro del rango horario.
+* **Parámetros:** Horas en formato 24h, ej. `start=09:00&end=18:00`
+* **Respuesta:** Imagen PNG
+
+---
+
+### 7. Servir archivos estáticos
+
+* **URL:** `/` o rutas de archivos (ej. `/index.html`, `/css/style.css`)
+* **Método:** `GET`
+* **Descripción:** Sirve archivos estáticos embebidos en el jar o recursos.
+
+---
+Claro, aquí te dejo el README actualizado con una sección **completa de documentación para usar todos los endpoints** con ejemplos de petición y respuesta:
+
+---
+
+# 📈 CryptoTracker Web — Backend Service (Versión 2.0)
+
+\[...]
+
+---
+
+## Documentación de Endpoints REST
+
+---
+
+### 1. Estado del servidor (Health Check)
+
+* **URL:** `/api/health`
+* **Método:** `GET`
+* **Descripción:** Verifica que el servidor está activo y funcionando.
+* **Ejemplo de petición:**
+
+```bash
+curl -X GET http://localhost:8080/api/health
+```
+
+* **Respuesta esperada (JSON):**
 
 ```json
 {
-  "forceUpdate": true
+  "status": "ok"
 }
 ```
 
-* Para consumir las respuestas, simplemente parsea el JSON recibido. Ejemplo en Java con Jackson:
+---
 
-```java
-ObjectMapper mapper = new ObjectMapper();
-List<Market> markets = mapper.readValue(jsonResponse, new TypeReference<List<Market>>() {});
+### 2. Actualizar precios (Forzar actualización)
+
+* **URL:** `/api/update-prices`
+* **Método:** `POST`
+* **Descripción:** Forzar que el backend recupere los precios actuales de las criptomonedas activas desde CoinGecko y actualice la base de datos.
+* **Ejemplo de petición:**
+
+```bash
+curl -X POST http://localhost:8080/api/update-prices
+```
+
+* **Respuesta esperada (texto plano):**
+
+```
+Actualización de precios forzada
+```
+
+* **Código HTTP:** `200 OK` si se actualiza correctamente; `405 Method Not Allowed` para otros métodos.
+
+---
+
+### 3. Últimos precios
+
+* **URL:** `/api/prices/latest`
+* **Método:** `GET`
+* **Descripción:** Obtiene los últimos precios almacenados de las criptomonedas activas.
+* **Ejemplo de petición:**
+
+```bash
+curl -X GET http://localhost:8080/api/prices/latest
+```
+
+* **Respuesta esperada (JSON):**
+
+```json
+[
+  {
+    "symbol": "BTC",
+    "name": "Bitcoin",
+    "logo_url": "https://assets.coingecko.com/coins/images/1/large/bitcoin.png",
+    "current_price": 30000.1234,
+    "last_updated": "2025-06-26T10:15:00Z"
+  },
+  {
+    "symbol": "ETH",
+    "name": "Ethereum",
+    "logo_url": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
+    "current_price": 1900.5678,
+    "last_updated": "2025-06-26T10:15:00Z"
+  }
+  // ...más criptomonedas
+]
+```
+
+---
+
+### 4. Historial de precios
+
+* **URL:** `/api/prices/history/{symbol}?hours={hours}`
+* **Método:** `GET`
+* **Parámetros:**
+
+  * `symbol` (en la ruta): símbolo de la criptomoneda (ej. BTC, ETH)
+  * `hours` (query param, opcional): rango en horas para obtener el histórico (por defecto 24)
+* **Descripción:** Obtiene el historial de precios en USD para la cripto especificada en el rango indicado.
+* **Ejemplo de petición:**
+
+```bash
+curl -X GET "http://localhost:8080/api/prices/history/BTC?hours=48"
+```
+
+* **Respuesta esperada (JSON):**
+
+```json
+[
+  {
+    "timestamp": 1687747200000,
+    "price": 29950.45
+  },
+  {
+    "timestamp": 1687750800000,
+    "price": 30010.30
+  }
+  // ...más puntos de datos
+]
+```
+
+---
+
+### 5. Gráfico simple de precios (PNG)
+
+* **URL:** `/api/chart/single/{symbol}?hours={hours}`
+* **Método:** `GET`
+* **Parámetros:**
+
+  * `symbol` (ruta): símbolo de la criptomoneda (ej. BTC)
+  * `hours` (query opcional): cantidad de horas para mostrar en el gráfico (por defecto 24)
+* **Descripción:** Genera y devuelve una imagen PNG con gráfico de líneas de precios en el rango especificado.
+* **Ejemplo de petición:**
+
+```bash
+curl -X GET "http://localhost:8080/api/chart/single/ETH?hours=12" --output eth_price_chart.png
+```
+
+* **Respuesta:** Imagen PNG con gráfico.
+
+---
+
+### 6. Gráfico de regresión lineal (PNG)
+
+* **URL:** `/api/chart/regression/{symbol}?start=HH:mm&end=HH:mm`
+* **Método:** `GET`
+* **Parámetros:**
+
+  * `symbol` (ruta): símbolo de la cripto (ej. BTC)
+  * `start` (query): hora de inicio en formato 24h `HH:mm` (ej. 09:00)
+  * `end` (query): hora de fin en formato 24h `HH:mm` (ej. 18:00)
+* **Descripción:** Genera y devuelve gráfico PNG con la línea de regresión lineal para el intervalo horario.
+* **Ejemplo de petición:**
+
+```bash
+curl -X GET "http://localhost:8080/api/chart/regression/BTC?start=08:00&end=16:00" --output btc_regression_chart.png
+```
+
+* **Respuesta:** Imagen PNG con gráfico de regresión.
+
+---
+
+### 7. Servir archivos estáticos
+
+* **URL:** `/` o `/nombre_del_archivo`
+* **Método:** `GET`
+* **Descripción:** Sirve archivos estáticos embebidos (HTML, CSS, JS, imágenes) para el frontend o documentación.
+* **Ejemplo de petición:**
+
+```bash
+curl -X GET http://localhost:8080/index.html
+```
+
+* **Respuesta:** Archivo solicitado con el `Content-Type` adecuado.
+
+---
+
+## Ejemplos prácticos con `curl`
+
+* Obtener estado:
+
+```bash
+curl http://localhost:8080/api/health
+```
+
+* Actualizar precios:
+
+```bash
+curl -X POST http://localhost:8080/api/update-prices
+```
+
+* Obtener últimos precios:
+
+```bash
+curl http://localhost:8080/api/prices/latest
+```
+
+* Obtener historial últimos 12 horas para ETH:
+
+```bash
+curl "http://localhost:8080/api/prices/history/ETH?hours=12"
+```
+
+* Descargar gráfico de precios BTC últimas 24 horas:
+
+```bash
+curl "http://localhost:8080/api/chart/single/BTC?hours=24" --output btc_chart.png
+```
+
+* Descargar gráfico de regresión BTC de 09:00 a 17:00:
+
+```bash
+curl "http://localhost:8080/api/chart/regression/BTC?start=09:00&end=17:00" --output btc_regression.png
 ```
 
 ---
@@ -165,49 +381,66 @@ List<Market> markets = mapper.readValue(jsonResponse, new TypeReference<List<Mar
 src/
 ├── main/
 │   ├── java/
-│   │   ├── com.backend/
-│   │   │   ├── WebServer.java               # Punto de entrada principal
-│   │   │   ├── handlers/
-│   │   │   │   ├── HealthHandler.java
-│   │   │   │   ├── UpdatePricesHandler.java
-│   │   │   │   ├── LatestPricesHandler.java
-│   │   │   │   ├── PriceHistoryHandler.java
-│   │   │   │   └── QueryParser.java         # Utilidad para parsear query strings
-│   │   │   └── services/
-│   │   │       └── CoinGeckoService.java    # Cliente personalizado para CoinGecko API
+│   │   └── com.backend/
+│   │       ├── WebServer.java                  # Clase principal con arranque del servidor HTTP
+│   │       ├── handlers/                        # Handlers HTTP para los endpoints
+│   │       │   ├── HealthHandler.java
+│   │       │   ├── UpdatePricesHandler.java
+│   │       │   ├── LatestPricesHandler.java
+│   │       │   ├── PriceHistoryHandler.java
+│   │       │   ├── RegressionChartHandler.java
+│   │       │   ├── SingleChartHandler.java
+│   │       │   ├── StaticFileHandler.java
+│   │       │   └── QueryParser.java             # Parser de query params
+│   │       └── services/
+│   │           ├── CoinGeckoService.java        # Cliente personalizado CoinGecko + DB + lógica
+│   │           └── DatabaseService.java         # Acceso a PostgreSQL y lógica SQL
 ├── resources/
+│   └── static/                                  # Archivos estáticos servidos (HTML, CSS, JS)
 └── pom.xml
 ```
 
 ---
 
-## Dependencias
+## Base de datos
 
-Actualmente no se usa la librería oficial `net.osslabz:coingecko-java` porque no fue posible integrarla correctamente.
-Se usa un cliente propio dentro de `CoinGeckoService` para manejar llamadas HTTP a la API de CoinGecko.
+### Tablas principales
 
-Además:
+* **cryptocurrencies**
 
-* Jackson (`com.fasterxml.jackson.core:jackson-databind`) para JSON
-* JUnit para pruebas (scope test)
+| Campo     | Tipo        | Descripción                 |
+| --------- | ----------- | --------------------------- |
+| id        | SERIAL PK   | Identificador único         |
+| symbol    | VARCHAR(10) | Símbolo abreviado (ej. BTC) |
+| name      | VARCHAR(50) | Nombre completo             |
+| logo\_url | TEXT        | URL del logo                |
+| active    | BOOLEAN     | Si la cripto está activa    |
+
+* **price\_history**
+
+| Campo      | Tipo          | Descripción                     |
+| ---------- | ------------- | ------------------------------- |
+| crypto\_id | INT FK        | Referencia a `cryptocurrencies` |
+| price\_usd | NUMERIC(18,8) | Precio en USD                   |
+| timestamp  | TIMESTAMP     | Fecha y hora de registro        |
 
 ---
 
-## Cómo extender el proyecto
+## Dependencias destacadas
 
-* Implementar caché o actualizaciones periódicas automáticas dentro de `CoinGeckoService` para mejorar rendimiento.
-* Añadir autenticación para proteger endpoints sensibles.
-* Agregar más endpoints para otros datos de CoinGecko (info de monedas, exchanges, etc.)
-* Mejorar manejo de errores y validaciones.
-* Añadir pruebas unitarias e integración.
+* OkHttp — para llamadas HTTP
+* Gson — para manejo JSON
+* PostgreSQL JDBC driver — conexión a base de datos
+* JFreeChart — generación de gráficos
+* Apache Commons IO — utilidades IO
+* Apache Commons Math — regresión estadística
 
 ---
 
-## Notas finales
+## Notas y recomendaciones
 
-* Este proyecto usa el servidor HTTP embebido de Java para simplicidad y aprendizaje. Para producción considera frameworks más robustos (Spring Boot, Micronaut, etc.).
-* Se requiere conexión a Internet para consultar la API de CoinGecko.
-* La API de CoinGecko tiene límites y políticas que deben respetarse.
-
-
-
+* Ajusta variables de entorno para conectar a tu base de datos PostgreSQL.
+* El servicio `CoinGeckoService` gestiona actualización, consulta y mapeo de símbolos a IDs de CoinGecko.
+* La base de datos almacena solo datos para criptomonedas activas, mejorando rendimiento y control.
+* Las imágenes PNG generadas pueden ser usadas en un frontend web o app móvil para visualización dinámica.
+* Para producción, considera agregar autenticación, caché y manejo robusto de errores.
