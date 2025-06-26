@@ -56,7 +56,7 @@ Las criptomonedas activas y su información (símbolo, nombre, logo, estado acti
 1. Clonar el repositorio
 
 ```bash
-git clone <url-del-repositorio>
+git clone https://github.com/AngeloMihaelle/cryptotracker-backend
 cd backend
 ```
 
