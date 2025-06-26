@@ -25,6 +25,7 @@ public class PriceHistoryHandler implements HttpHandler {
             URI requestURI = exchange.getRequestURI();
             String path = requestURI.getPath();
             String[] segments = path.split("/");
+
             if (segments.length < 5) {
                 exchange.sendResponseHeaders(400, -1); // Solicitud incorrecta
                 return;
@@ -37,19 +38,22 @@ public class PriceHistoryHandler implements HttpHandler {
             try {
                 hours = Integer.parseInt(queryParams.getOrDefault("hours", "24"));
             } catch (NumberFormatException e) {
-                exchange.sendResponseHeaders(400, -1);
+                exchange.sendResponseHeaders(400, -1); // Parámetro inválido
                 return;
             }
 
             try {
-                List<List<Double>> priceHistory = coinGeckoService.getPriceHistory(symbol, hours);
+                // Ahora obtenemos lista de Map<String, Object> en vez de List<List<Double>>
+                List<Map<String, Object>> priceHistory = coinGeckoService.getPriceHistory(symbol, hours);
                 String response = objectMapper.writeValueAsString(priceHistory);
 
                 exchange.getResponseHeaders().add("Content-Type", "application/json");
                 exchange.sendResponseHeaders(200, response.getBytes().length);
+
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(response.getBytes());
                 }
+
             } catch (IOException e) {
                 exchange.sendResponseHeaders(500, -1); // Error del servidor
                 e.printStackTrace();

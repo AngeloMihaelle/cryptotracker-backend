@@ -35,6 +35,7 @@ public class RegressionChartHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange ex) throws IOException {
         System.out.println("[INFO] /api/chart/regression invoked: " + ex.getRequestURI());
+
         if (!"GET".equalsIgnoreCase(ex.getRequestMethod())) {
             ex.sendResponseHeaders(405, -1);
             return;
@@ -42,15 +43,17 @@ public class RegressionChartHandler implements HttpHandler {
 
         URI uri = ex.getRequestURI();
         String[] parts = uri.getPath().split("/");
+
         if (parts.length < 5) {
             ex.sendResponseHeaders(400, -1);
             return;
         }
-        String symbol = parts[4];
 
+        String symbol = parts[4];
         Map<String, String> params = queryToMap(uri.getRawQuery());
         String startParam = params.get("start");
         String endParam = params.get("end");
+
         if (startParam == null || endParam == null) {
             ex.sendResponseHeaders(400, -1);
             return;
@@ -66,7 +69,9 @@ public class RegressionChartHandler implements HttpHandler {
             return;
         }
 
-        List<List<Double>> history = svc.getPriceHistory(symbol, 24);
+        // NUEVO: usamos la nueva versión del método
+        List<Map<String, Object>> history = svc.getPriceHistory(symbol, 24);
+
         TimeSeries series = new TimeSeries(symbol.toUpperCase());
         SimpleRegression regression = new SimpleRegression(true);
 
@@ -83,9 +88,10 @@ public class RegressionChartHandler implements HttpHandler {
         int endHour = endCal.get(Calendar.HOUR_OF_DAY);
         int endMinute = endCal.get(Calendar.MINUTE);
 
-        for (List<Double> p : history) {
-            long tsMs = p.get(0).longValue();
-            double price = p.get(1);
+        for (Map<String, Object> entry : history) {
+            long tsMs = ((Number) entry.get("timestamp")).longValue();
+            double price = ((Number) entry.get("price")).doubleValue();
+
             Calendar cal = Calendar.getInstance();
             cal.setTimeInMillis(tsMs);
             int h = cal.get(Calendar.HOUR_OF_DAY);

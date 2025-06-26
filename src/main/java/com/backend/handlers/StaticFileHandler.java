@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 public class StaticFileHandler implements HttpHandler {
 
     private final String basePath;
@@ -44,4 +46,5 @@ public class StaticFileHandler implements HttpHandler {
         if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
         return "application/octet-stream";
     }
+
 }

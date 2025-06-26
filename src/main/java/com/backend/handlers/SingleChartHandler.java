@@ -7,7 +7,10 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import java.io.*;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class SingleChartHandler implements HttpHandler {
     private final CoinGeckoService svc;
@@ -17,7 +20,7 @@ public class SingleChartHandler implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange ex) throws IOException {
+public void handle(HttpExchange ex) throws IOException {
         System.out.println("[INFO] Solicitud recibida en /api/chart/single");
 
         if (!"GET".equalsIgnoreCase(ex.getRequestMethod())) {
@@ -50,10 +53,10 @@ public class SingleChartHandler implements HttpHandler {
             }
         }
 
-        List<List<Double>> history;
+        List<Map<String, Object>> rawHistory;
         try {
-            history = svc.getPriceHistory(symbol, hours);
-            System.out.println("[INFO] Historia de precios obtenida. Cantidad de puntos: " + history.size());
+            rawHistory = svc.getPriceHistory(symbol, hours);
+            System.out.println("[INFO] Historia de precios obtenida. Cantidad de puntos: " + rawHistory.size());
         } catch (Exception e) {
             System.out.println("[ERROR] Error al obtener historial de precios: " + e.getMessage());
             ex.sendResponseHeaders(500, -1);
@@ -62,6 +65,14 @@ public class SingleChartHandler implements HttpHandler {
 
         JFreeChart chart;
         try {
+            // Convertir a List<List<Double>> si ChartBuilder aún no soporta Map
+            List<List<Double>> history = new ArrayList<>();
+            for (Map<String, Object> point : rawHistory) {
+                long timestamp = ((Number) point.get("timestamp")).longValue();
+                double price = ((Number) point.get("price")).doubleValue();
+                history.add(Arrays.asList((double) timestamp, price));
+            }
+
             chart = ChartBuilder.buildStyledLineChart(history, "Precio de " + symbol, "Hora", "USD");
             System.out.println("[INFO] Gráfico generado correctamente.");
         } catch (Exception e) {

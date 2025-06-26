@@ -67,22 +67,31 @@ public class OverlayChartHandler implements HttpHandler {
         }
 
         TimeSeriesCollection dataset = new TimeSeriesCollection();
+
         for (String sym : symbols) {
-            List<List<Double>> history = svc.getPriceHistory(sym, 24);
+            List<Map<String, Object>> history = svc.getPriceHistory(sym, 24);
             TimeSeries ts = new TimeSeries(sym.toUpperCase());
-            for (List<Double> p : history) {
-                long tsMs = p.get(0).longValue();
+
+            for (Map<String, Object> p : history) {
+                // Extraer timestamp y precio del mapa
+                long tsMs = ((Number) p.get("timestamp")).longValue();
+                double price = ((Number) p.get("price")).doubleValue();
+
                 Calendar cal = Calendar.getInstance();
                 cal.setTimeInMillis(tsMs);
-                int h = cal.get(Calendar.HOUR_OF_DAY), m = cal.get(Calendar.MINUTE);
+                int h = cal.get(Calendar.HOUR_OF_DAY);
+                int m = cal.get(Calendar.MINUTE);
+
                 if ((h > startTime.getHours() || (h == startTime.getHours() && m >= startTime.getMinutes())) &&
                     (h < endTime.getHours()   || (h == endTime.getHours()   && m <= endTime.getMinutes()))) {
-                    ts.addOrUpdate(new Minute(new Date(tsMs)), p.get(1));
+                    ts.addOrUpdate(new Minute(new Date(tsMs)), price);
                 }
             }
+
             dataset.addSeries(ts);
             System.out.println("[INFO] Added series '" + sym + "' with " + ts.getItemCount() + " points");
         }
+
 
         // Create overlay chart using ChartBuilder
         JFreeChart chart = ChartBuilder.buildStyledOverlayChart(dataset, "Overlay Chart", "Hora", "USD", symbols.size());
