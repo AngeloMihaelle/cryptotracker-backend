@@ -161,12 +161,6 @@ Claro, aquí te dejo el README actualizado con una sección **completa de docume
 
 ---
 
-# 📈 CryptoTracker Web — Backend Service (Versión 2.0)
-
-\[...]
-
----
-
 ## Documentación de Endpoints REST
 
 ---
