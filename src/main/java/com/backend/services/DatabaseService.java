@@ -7,9 +7,9 @@ import java.util.*;
 public class DatabaseService {
     // ⚡ MODIFICADO: Nueva base de datos
     private static final String DB_URL = System.getenv().getOrDefault("DB_URL", 
-        "jdbc:postgresql://34.41.127.226:5432/cryptodb_v2");
+        "jdbc:postgresql://34.60.214.232:5432/cryptodb_v3");
     private static final String DB_USER = System.getenv().getOrDefault("DB_USER", "cryptouser");
-    private static final String DB_PASSWORD = System.getenv().getOrDefault("DB_PASSWORD", "crypto123");
+    private static final String DB_PASSWORD = System.getenv().getOrDefault("DB_PASSWORD", "crypto1234");
     
     static {
         try {

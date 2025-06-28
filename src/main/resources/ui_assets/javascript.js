@@ -6,7 +6,7 @@ $(document).ready(function() {
 
     // Mapeo de símbolos a IDs de CoinGecko
     const symbolToId = {
-        'btc': 'bitcoin',
+        'BTC': 'bitcoin',
         'eth': 'ethereum',
         'usdt': 'tether',
         'bnb': 'binancecoin',

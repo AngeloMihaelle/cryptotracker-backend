@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build and Run Backend (PowerShell)",
+      "type": "shell",
+      "command": "mvn clean install; if ($?) { java -jar target/backend-1.0-SNAPSHOT.jar }",
+      "options": {
+        "shell": {
+          "executable": "powershell.exe",
+          "args": [ "-NoProfile", "-Command" ]
+        }
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "detail": "Compila y ejecuta el backend desde target usando PowerShell"
+    }
+  ]
+}
