@@ -94,7 +94,7 @@ public class OverlayChartHandler implements HttpHandler {
 
 
         // Create overlay chart using ChartBuilder
-        JFreeChart chart = ChartBuilder.buildStyledOverlayChart(dataset, "Overlay Chart", "Hora", "USD", symbols.size());
+        JFreeChart chart = ChartBuilder.buildStyledOverlayChart(dataset, "Overlay Chart", "Hora", "Datos Normalizados", symbols.size());
         ex.getResponseHeaders().add("Content-Type", "image/png");
         ex.sendResponseHeaders(200, 0);
         try (OutputStream os = ex.getResponseBody()) {
