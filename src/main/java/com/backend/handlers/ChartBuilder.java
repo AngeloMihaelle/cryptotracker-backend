@@ -46,9 +46,53 @@ public class ChartBuilder {
         renderer.setDefaultItemLabelsVisible(false); // Ocultar valores en puntos
         renderer.setDefaultItemLabelPaint(Color.WHITE);
 
+        applyDarkTheme(chart, plot, renderer);
+        return chart;
+    }
+
+    public static JFreeChart buildStyledOverlayChart(TimeSeriesCollection originalDataset, String title, String xLabel, String yLabel, int seriesCount) {
+        // Normalizar cada serie dividiendo por el primer valor
+        TimeSeriesCollection normalizedDataset = new TimeSeriesCollection();
+
+        for (int i = 0; i < originalDataset.getSeriesCount(); i++) {
+            TimeSeries original = originalDataset.getSeries(i);
+            if (original.isEmpty()) continue;
+
+            TimeSeries normalized = new TimeSeries(original.getKey());
+            Number firstValue = original.getValue(0);
+
+            if (firstValue == null || firstValue.doubleValue() == 0.0) continue;
+
+            for (int j = 0; j < original.getItemCount(); j++) {
+                Number value = original.getValue(j);
+                if (value != null) {
+                    double norm = value.doubleValue() / firstValue.doubleValue();
+                    normalized.addOrUpdate(original.getTimePeriod(j), norm);
+                }
+            }
+
+            normalizedDataset.addSeries(normalized);
+        }
+
+        JFreeChart chart = ChartFactory.createTimeSeriesChart(title, xLabel, yLabel, normalizedDataset, true, false, false);
+        XYPlot plot = chart.getXYPlot();
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer(true, true);
+
+        for (int i = 0; i < seriesCount; i++) {
+            renderer.setSeriesPaint(i, Color.getHSBColor((float) i / seriesCount, 0.8f, 1f));
+            renderer.setSeriesStroke(i, new BasicStroke(2.5f));
+            renderer.setSeriesShape(i, new Ellipse2D.Double(-1, -1, 2, 2));
+        }
+
+        applyDarkTheme(chart, plot, renderer);
+        return chart;
+    }
+
+    private static void applyDarkTheme(JFreeChart chart, XYPlot plot, XYLineAndShapeRenderer renderer) {
         Color darkBg = new Color(13, 17, 23);
         Color gridColor = new Color(44, 50, 60);
         Color axisTextColor = Color.WHITE;
+
         // Tema visual
         StandardChartTheme theme = (StandardChartTheme) StandardChartTheme.createJFreeTheme();
         theme.setRegularFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -60,16 +104,10 @@ public class ChartBuilder {
         theme.setRangeGridlinePaint(gridColor);
         theme.apply(chart);
 
-
         plot.setRenderer(renderer);
-
-        // Estilo oscuro con ejes y texto blancos
-        
-
         plot.setBackgroundPaint(darkBg);
         plot.setDomainGridlinePaint(gridColor);
         plot.setRangeGridlinePaint(gridColor);
-
         plot.getDomainAxis().setTickLabelPaint(axisTextColor);
         plot.getRangeAxis().setTickLabelPaint(axisTextColor);
         plot.getDomainAxis().setLabelPaint(axisTextColor);
@@ -80,29 +118,6 @@ public class ChartBuilder {
             chart.getTitle().setPaint(Color.WHITE);
         }
 
-        
         chart.setAntiAlias(true);
-
-        return chart;
     }
-    
-    public static JFreeChart buildStyledOverlayChart(TimeSeriesCollection dataset, String title, String xLabel, String yLabel, int seriesCount) {
-    JFreeChart chart = ChartFactory.createTimeSeriesChart(title, xLabel, yLabel, dataset, true, false, false);
-    XYPlot plot = chart.getXYPlot();
-    XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer(true, true);
-
-    for (int i = 0; i < seriesCount; i++) {
-        renderer.setSeriesPaint(i, Color.getHSBColor((float)i / seriesCount, 0.7f, 0.9f));
-        renderer.setSeriesStroke(i, new BasicStroke(2.5f));
-        renderer.setSeriesShape(i, new Ellipse2D.Double(-1, -1, 2, 2));
-    }
-
-    plot.setRenderer(renderer);
-
-    // Reutiliza el tema oscuro que ya tienes
-    JFreeChart styled = buildStyledLineChart(Collections.emptyList(), title, xLabel, yLabel);
-    plot.setBackgroundPaint(styled.getPlot().getBackgroundPaint());
-    chart.setBackgroundPaint(styled.getBackgroundPaint());
-    return chart;
-}
 }
