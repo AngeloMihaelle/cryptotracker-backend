@@ -8,22 +8,15 @@ import org.jfree.chart.ChartUtils;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.*;
-import org.jfree.data.xy.XYDataset;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.io.*;
 import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.util.*;
-
 import java.util.List;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Calendar;
-import java.util.Date;
+
 
 public class RegressionChartHandler implements HttpHandler {
     private final CoinGeckoService svc;
@@ -51,26 +44,28 @@ public class RegressionChartHandler implements HttpHandler {
 
         String symbol = parts[4];
         Map<String, String> params = queryToMap(uri.getRawQuery());
-        String startParam = params.get("start");
-        String endParam = params.get("end");
+        String hoursParam = params.get("hours");
 
-        if (startParam == null || endParam == null) {
+        if (hoursParam == null) {
             ex.sendResponseHeaders(400, -1);
             return;
         }
 
-        Date startTime, endTime;
+        int hours;
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-            startTime = sdf.parse(startParam);
-            endTime = sdf.parse(endParam);
-        } catch (Exception e) {
+            hours = Integer.parseInt(hoursParam);
+        } catch (NumberFormatException e) {
+            System.out.println("[ERROR] Invalid hours parameter: " + hoursParam);
             ex.sendResponseHeaders(400, -1);
             return;
         }
 
-        // NUEVO: usamos la nueva versión del método
-        List<Map<String, Object>> history = svc.getPriceHistory(symbol, 24);
+        List<Map<String, Object>> history = svc.getPriceHistory(symbol, hours);
+
+        if (history.isEmpty()) {
+            ex.sendResponseHeaders(404, -1);
+            return;
+        }
 
         TimeSeries series = new TimeSeries(symbol.toUpperCase());
         SimpleRegression regression = new SimpleRegression(true);
@@ -78,35 +73,15 @@ public class RegressionChartHandler implements HttpHandler {
         long minX = Long.MAX_VALUE;
         long maxX = Long.MIN_VALUE;
 
-        Calendar startCal = Calendar.getInstance();
-        startCal.setTime(startTime);
-        int startHour = startCal.get(Calendar.HOUR_OF_DAY);
-        int startMinute = startCal.get(Calendar.MINUTE);
-
-        Calendar endCal = Calendar.getInstance();
-        endCal.setTime(endTime);
-        int endHour = endCal.get(Calendar.HOUR_OF_DAY);
-        int endMinute = endCal.get(Calendar.MINUTE);
-
         for (Map<String, Object> entry : history) {
             long tsMs = ((Number) entry.get("timestamp")).longValue();
             double price = ((Number) entry.get("price")).doubleValue();
 
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(tsMs);
-            int h = cal.get(Calendar.HOUR_OF_DAY);
-            int m = cal.get(Calendar.MINUTE);
+            regression.addData(tsMs, price);
+            series.addOrUpdate(new Minute(new Date(tsMs)), price);
 
-            boolean afterStart = (h > startHour) || (h == startHour && m >= startMinute);
-            boolean beforeEnd = (h < endHour) || (h == endHour && m <= endMinute);
-
-            if (afterStart && beforeEnd) {
-                regression.addData(tsMs, price);
-                series.addOrUpdate(new Minute(new Date(tsMs)), price);
-
-                if (tsMs < minX) minX = tsMs;
-                if (tsMs > maxX) maxX = tsMs;
-            }
+            if (tsMs < minX) minX = tsMs;
+            if (tsMs > maxX) maxX = tsMs;
         }
 
         if (regression.getN() == 0) {

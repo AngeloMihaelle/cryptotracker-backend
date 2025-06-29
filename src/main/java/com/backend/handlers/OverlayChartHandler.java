@@ -9,23 +9,14 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Minute;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.chart.ChartUtils;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.util.*;
-
 import java.util.List;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Calendar;
-import java.util.Date;
 
 public class OverlayChartHandler implements HttpHandler {
     private final CoinGeckoService svc;
@@ -44,46 +35,38 @@ public class OverlayChartHandler implements HttpHandler {
 
         Map<String, String> params = queryToMap(ex.getRequestURI().getQuery());
         String symbolsParam = params.get("symbols");
-        String startParam = params.get("start");
-        String endParam = params.get("end");
-        if (symbolsParam == null || startParam == null || endParam == null) {
-            System.out.println("[ERROR] Missing required params: symbols, start, end");
+        String hoursParam = params.get("hours");
+
+        if (symbolsParam == null || hoursParam == null) {
+            System.out.println("[ERROR] Missing required params: symbols, hours");
             ex.sendResponseHeaders(400, -1);
             return;
         }
 
         List<String> symbols = Arrays.asList(symbolsParam.split(","));
-        System.out.println("[INFO] Symbols: " + symbols);
-
-        Date startTime, endTime;
+        int hours;
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-            startTime = sdf.parse(startParam);
-            endTime = sdf.parse(endParam);
-        } catch (Exception e) {
-            System.out.println("[ERROR] Invalid time format: " + e.getMessage());
+            hours = Integer.parseInt(hoursParam);
+        } catch (NumberFormatException e) {
+            System.out.println("[ERROR] Invalid hours value: " + e.getMessage());
             ex.sendResponseHeaders(400, -1);
             return;
         }
 
+        long now = System.currentTimeMillis();
+        long startTimeMs = now - hours * 3600L * 1000;
+
         TimeSeriesCollection dataset = new TimeSeriesCollection();
 
         for (String sym : symbols) {
-            List<Map<String, Object>> history = svc.getPriceHistory(sym, 24);
+            List<Map<String, Object>> history = svc.getPriceHistory(sym, hours);
             TimeSeries ts = new TimeSeries(sym.toUpperCase());
 
             for (Map<String, Object> p : history) {
-                // Extraer timestamp y precio del mapa
                 long tsMs = ((Number) p.get("timestamp")).longValue();
                 double price = ((Number) p.get("price")).doubleValue();
 
-                Calendar cal = Calendar.getInstance();
-                cal.setTimeInMillis(tsMs);
-                int h = cal.get(Calendar.HOUR_OF_DAY);
-                int m = cal.get(Calendar.MINUTE);
-
-                if ((h > startTime.getHours() || (h == startTime.getHours() && m >= startTime.getMinutes())) &&
-                    (h < endTime.getHours()   || (h == endTime.getHours()   && m <= endTime.getMinutes()))) {
+                if (tsMs >= startTimeMs) {
                     ts.addOrUpdate(new Minute(new Date(tsMs)), price);
                 }
             }
@@ -93,8 +76,10 @@ public class OverlayChartHandler implements HttpHandler {
         }
 
 
-        // Create overlay chart using ChartBuilder
-        JFreeChart chart = ChartBuilder.buildStyledOverlayChart(dataset, "Overlay Chart", "Hora", "Datos Normalizados", symbols.size());
+        JFreeChart chart = ChartBuilder.buildStyledOverlayChart(
+            dataset, "Overlay Chart", "Hora", "Datos Normalizados", symbols.size()
+        );
+
         ex.getResponseHeaders().add("Content-Type", "image/png");
         ex.sendResponseHeaders(200, 0);
         try (OutputStream os = ex.getResponseBody()) {
